@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateUserProgress, saveUserProgress } from "@/lib/utils/kv";
-import { updateFlashcardProgress, updateQuestionProgress, updateStudyTime, updateStreak } from "@/lib/utils/progress";
+import { getOrCreateUserProgress, saveUserProgress } from "@/lib/db/progress-db";
+import { createDefaultProgress, updateFlashcardProgress, updateQuestionProgress, updateStudyTime, updateStreak } from "@/lib/utils/progress";
 import type { Quality } from "@/lib/types/study";
 
 /**
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const userId = searchParams.get("userId") || "anonymous";
 
-    const progress = await getOrCreateUserProgress(userId);
+    const progress = await getOrCreateUserProgress(userId, () => createDefaultProgress(userId));
     return NextResponse.json(progress);
   } catch (error) {
     console.error("Error fetching progress:", error);
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const progress = await getOrCreateUserProgress(userId);
+    const progress = await getOrCreateUserProgress(userId, () => createDefaultProgress(userId));
     let updatedProgress = progress;
 
     switch (type) {
@@ -78,6 +78,19 @@ export async function POST(request: NextRequest) {
           );
         }
         updatedProgress = updateStudyTime(progress, minutes);
+        break;
+      }
+
+      case "mark_unanswered": {
+        const { questionId } = data;
+        if (!questionId) {
+          return NextResponse.json(
+            { error: "questionId is required" },
+            { status: 400 }
+          );
+        }
+        const { markQuestionUnanswered } = await import("@/lib/utils/progress");
+        updatedProgress = markQuestionUnanswered(progress, questionId);
         break;
       }
 

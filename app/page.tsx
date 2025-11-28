@@ -1,4 +1,4 @@
-import Link from "next/link";
+import ExamSelector from "@/app/components/ExamSelector";
 
 export default function Home() {
   return (
@@ -14,17 +14,12 @@ export default function Home() {
       <main className="max-w-6xl mx-auto p-8">
         <div className="text-center mb-16 mt-16">
           <h2 className="text-5xl font-bold text-black mb-6">
-            Efficient CFA Level I Preparation
+            Efficient CFA Exam Preparation
           </h2>
           <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
             Master the CFA curriculum with spaced repetition, active recall, and targeted practice questions.
           </p>
-          <Link
-            href="/study"
-            className="inline-block border-4 border-black px-12 py-6 text-xl font-bold text-black hover:bg-black hover:text-white transition-colors"
-          >
-            Start Studying
-          </Link>
+          <ExamSelector />
         </div>
 
         {/* Features */}
@@ -75,12 +70,7 @@ export default function Home() {
 
         {/* CTA */}
         <div className="text-center border-t-2 border-black pt-12">
-          <Link
-            href="/study"
-            className="inline-block border-4 border-black px-12 py-6 text-xl font-bold text-black hover:bg-black hover:text-white transition-colors"
-          >
-            Get Started
-          </Link>
+          <p className="text-gray-600 mb-4">Select your exam above to get started</p>
         </div>
       </main>
     </div>

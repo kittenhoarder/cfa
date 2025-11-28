@@ -91,7 +91,11 @@ export function updateQuestionProgress(
     attempts: 0,
     correct: 0,
     lastAttempt: new Date().toISOString(),
+    answered: false,
   };
+
+  const now = new Date().toISOString();
+  const wasAnswered = currentQuestionProgress.answered;
 
   return {
     ...progress,
@@ -100,8 +104,35 @@ export function updateQuestionProgress(
       [questionId]: {
         attempts: currentQuestionProgress.attempts + 1,
         correct: currentQuestionProgress.correct + (isCorrect ? 1 : 0),
-        lastAttempt: new Date().toISOString(),
+        lastAttempt: now,
+        answered: true,
+        firstAnswered: wasAnswered ? currentQuestionProgress.firstAnswered : now,
+        lastAnswered: now,
       } as QuestionProgress,
+    },
+  };
+}
+
+/**
+ * Mark question as unanswered
+ */
+export function markQuestionUnanswered(
+  progress: UserProgress,
+  questionId: string
+): UserProgress {
+  const currentQuestionProgress = progress.questions[questionId];
+  if (!currentQuestionProgress) {
+    return progress;
+  }
+
+  return {
+    ...progress,
+    questions: {
+      ...progress.questions,
+      [questionId]: {
+        ...currentQuestionProgress,
+        answered: false,
+      },
     },
   };
 }

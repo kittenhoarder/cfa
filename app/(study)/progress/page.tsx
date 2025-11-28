@@ -180,23 +180,6 @@ export default function ProgressPage() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="border-t-2 border-black pt-8">
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/study"
-              className="border-2 border-black px-6 py-3 text-black font-semibold hover:bg-black hover:text-white transition-colors"
-            >
-              Back to Dashboard
-            </Link>
-            <Link
-              href="/"
-              className="border-2 border-black px-6 py-3 text-black font-semibold hover:bg-black hover:text-white transition-colors"
-            >
-              Home
-            </Link>
-          </div>
-        </div>
       </main>
     </div>
   );

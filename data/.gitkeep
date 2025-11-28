@@ -1,0 +1,3 @@
+# This file ensures the data directory exists in git
+# The database.json file will be gitignored
+

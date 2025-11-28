@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateUserProgress, saveUserProgress } from "@/lib/utils/kv";
-import { updateStudyTime, updateStreak } from "@/lib/utils/progress";
+import { getOrCreateUserProgress, saveUserProgress } from "@/lib/db/progress-db";
+import { createDefaultProgress, updateStudyTime, updateStreak } from "@/lib/utils/progress";
 
 /**
  * POST /api/study-session
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const progress = await getOrCreateUserProgress(userId);
+    const progress = await getOrCreateUserProgress(userId, () => createDefaultProgress(userId));
 
     if (action === "start") {
       // Store session start time (could be stored in session storage or KV)

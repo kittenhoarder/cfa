@@ -10,21 +10,27 @@ import { curriculum } from "@/lib/content/curriculum";
 export default function StudyPage() {
   const [userId] = useState(() => getDefaultUserId());
   const [progress, setProgress] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadProgress() {
+    async function loadData() {
       try {
-        const response = await fetch(`/api/progress?userId=${userId}`);
-        const data = await response.json();
-        setProgress(data);
+        const [progressRes, profileRes] = await Promise.all([
+          fetch(`/api/progress?userId=${userId}`),
+          fetch(`/api/user/profile?userId=${userId}`),
+        ]);
+        const progressData = await progressRes.json();
+        const profileData = await profileRes.json();
+        setProgress(progressData);
+        setUserProfile(profileData);
       } catch (error) {
-        console.error("Error loading progress:", error);
+        console.error("Error loading data:", error);
       } finally {
         setLoading(false);
       }
     }
-    loadProgress();
+    loadData();
   }, [userId]);
 
   if (loading) {
@@ -43,6 +49,11 @@ export default function StudyPage() {
   const totalStudyTime = progress?.stats?.totalStudyTime || 0;
   const currentStreak = progress?.stats?.currentStreak || 0;
 
+  // Calculate days until exam
+  const daysUntilExam = userProfile?.examDate
+    ? Math.ceil((new Date(userProfile.examDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -53,6 +64,18 @@ export default function StudyPage() {
       </header>
 
       <main className="max-w-6xl mx-auto p-8">
+        {/* Exam Countdown */}
+        {userProfile && daysUntilExam !== null && (
+          <div className="border-2 border-black p-6 mb-8 bg-black text-white">
+            <div className="text-sm mb-2">Days Until Exam</div>
+            <div className="text-4xl font-bold">{daysUntilExam}</div>
+            <div className="text-sm mt-2">
+              {userProfile.examLevel === "level-1" ? "CFA Level I" :
+               userProfile.examLevel === "level-2" ? "CFA Level II" : "CFA Level III"} - {new Date(userProfile.examDate).toLocaleDateString()}
+            </div>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <div className="border-2 border-black p-6">
@@ -111,40 +134,36 @@ export default function StudyPage() {
               const topicDueCards = dueCards.filter((id) =>
                 topicCards.some((c) => c.id === id)
               );
+              
+              // Calculate progress
+              const cardsReviewed = topicCards.filter((c) => 
+                progress?.flashcards[c.id]
+              ).length;
+              const questionsAnswered = topicQuestions.filter((q) =>
+                progress?.questions[q.id]?.answered
+              ).length;
 
               return (
-                <div key={topic.id} className="border-2 border-black p-4">
+                <Link
+                  key={topic.id}
+                  href={`/flashcards?topic=${topic.id}`}
+                  className="border-2 border-black p-4 hover:bg-black hover:text-white transition-colors"
+                >
                   <div className="font-bold text-lg mb-2">{topic.name}</div>
-                  <div className="text-sm text-gray-600 mb-2">
+                  <div className="text-sm text-gray-600 mb-2 hover:text-gray-300">
                     Weight: {topic.weight}%
                   </div>
-                  <div className="text-sm">
-                    <div>{topicDueCards.length} cards due</div>
-                    <div>{topicQuestions.length} questions</div>
+                  <div className="text-sm space-y-1">
+                    <div>{cardsReviewed}/{topicCards.length} cards reviewed</div>
+                    <div>{questionsAnswered}/{topicQuestions.length} questions answered</div>
+                    <div className="font-semibold mt-2">{topicDueCards.length} cards due</div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="border-t-2 border-black pt-8">
-          <div className="flex flex-wrap gap-4">
-            <Link
-              href="/progress"
-              className="border-2 border-black px-6 py-3 text-black font-semibold hover:bg-black hover:text-white transition-colors"
-            >
-              View Progress
-            </Link>
-            <Link
-              href="/"
-              className="border-2 border-black px-6 py-3 text-black font-semibold hover:bg-black hover:text-white transition-colors"
-            >
-              Home
-            </Link>
-          </div>
-        </div>
       </main>
     </div>
   );

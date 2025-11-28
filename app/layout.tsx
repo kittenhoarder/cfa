@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import Navigation from "@/app/components/Navigation";
 
 export const metadata: Metadata = {
   title: "CFA Study Service",
-  description: "Efficient CFA Level I exam preparation with spaced repetition and practice questions",
+  description: "Efficient CFA exam preparation with spaced repetition and practice questions",
 };
 
 export const viewport: Viewport = {
@@ -20,7 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <Navigation />
+        <div style={{ paddingTop: "48px" }}>
+          {children}
+        </div>
       </body>
     </html>
   );

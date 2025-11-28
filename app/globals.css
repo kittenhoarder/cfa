@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
+  --color-correct: #004d00;
+  --color-incorrect: #660000;
 }
 
 body {

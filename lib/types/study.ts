@@ -55,11 +55,22 @@ export interface FlashcardProgress {
   nextReview: string; // ISO date string
 }
 
+// User profile
+export interface UserProfile {
+  userId: string;
+  examLevel: "level-1" | "level-2" | "level-3";
+  examDate: string; // ISO date string
+  createdAt: string;
+}
+
 // User progress for a question
 export interface QuestionProgress {
   attempts: number;
   correct: number;
   lastAttempt: string; // ISO date string
+  answered: boolean;
+  firstAnswered?: string; // ISO date string
+  lastAnswered?: string; // ISO date string
 }
 
 // User statistics
