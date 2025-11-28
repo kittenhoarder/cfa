@@ -20,9 +20,22 @@ export interface Database {
 }
 
 /**
+ * Ensure data directory exists
+ */
+async function ensureDataDirectory(): Promise<void> {
+  try {
+    await fs.access(path.dirname(DB_PATH));
+  } catch {
+    // Directory doesn't exist, create it
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+  }
+}
+
+/**
  * Initialize database file if it doesn't exist
  */
 async function ensureDatabase(): Promise<void> {
+  await ensureDataDirectory();
   try {
     await fs.access(DB_PATH);
   } catch {
@@ -31,7 +44,6 @@ async function ensureDatabase(): Promise<void> {
       users: {},
       progress: {},
     };
-    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
     await fs.writeFile(DB_PATH, JSON.stringify(initialData, null, 2));
   }
 }
@@ -55,14 +67,17 @@ export async function readDatabase(): Promise<Database> {
  * Write database file with atomic operation (write to temp, then rename)
  */
 export async function writeDatabase(data: Database): Promise<void> {
-  await ensureDatabase();
+  // Ensure directory exists before writing
+  await ensureDataDirectory();
+  
   const tempPath = `${DB_PATH}.tmp`;
   try {
-    // Write to temporary file first
-    await fs.writeFile(tempPath, JSON.stringify(data, null, 2));
-    // Atomic rename
+    // Write to temporary file first (this will create the file even if directory was just created)
+    await fs.writeFile(tempPath, JSON.stringify(data, null, 2), "utf-8");
+    // Atomic rename - ensure target directory exists
+    await ensureDataDirectory();
     await fs.rename(tempPath, DB_PATH);
-  } catch (error) {
+  } catch (error: any) {
     // Clean up temp file on error
     try {
       await fs.unlink(tempPath);
@@ -70,6 +85,17 @@ export async function writeDatabase(data: Database): Promise<void> {
       // Ignore cleanup errors
     }
     console.error("Error writing database:", error);
+    // If it's a directory issue, try creating directory again and retry once
+    if (error?.code === "ENOENT") {
+      try {
+        await ensureDataDirectory();
+        await fs.writeFile(tempPath, JSON.stringify(data, null, 2), "utf-8");
+        await fs.rename(tempPath, DB_PATH);
+        return; // Success on retry
+      } catch (retryError) {
+        console.error("Error on retry:", retryError);
+      }
+    }
     throw error;
   }
 }
