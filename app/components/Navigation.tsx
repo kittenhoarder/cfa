@@ -20,6 +20,17 @@ export default function Navigation() {
           if (profile.examLevel && profile.examDate) {
             const levelName = profile.examLevel === "level-1" ? "Level I" : 
                             profile.examLevel === "level-2" ? "Level II" : "Level III";
+            
+            if (profile.examDateId) {
+              const { getExamDateById } = await import("@/lib/data/exam-dates");
+              const examDate = getExamDateById(profile.examDateId);
+              if (examDate) {
+                setExamInfo(`CFA ${levelName} - ${examDate.displayName}`);
+                return;
+              }
+            }
+            
+            // Fallback to date string
             const date = new Date(profile.examDate);
             const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
             setExamInfo(`CFA ${levelName} - ${dateStr}`);

@@ -6,11 +6,13 @@ import { getDefaultUserId, getDueCards } from "@/lib/utils/progress";
 import { flashcards } from "@/lib/content/flashcards";
 import { questions } from "@/lib/content/questions";
 import { curriculum } from "@/lib/content/curriculum";
+import { getExamDateById } from "@/lib/data/exam-dates";
 
 export default function StudyPage() {
   const [userId] = useState(() => getDefaultUserId());
   const [progress, setProgress] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [examDisplayName, setExamDisplayName] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +26,20 @@ export default function StudyPage() {
         const profileData = await profileRes.json();
         setProgress(progressData);
         setUserProfile(profileData);
+        
+        // Load exam display name
+        if (profileData.examDateId) {
+          const examDate = getExamDateById(profileData.examDateId);
+          if (examDate) {
+            setExamDisplayName(examDate.displayName);
+          } else {
+            const date = new Date(profileData.examDate);
+            setExamDisplayName(date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }));
+          }
+        } else if (profileData.examDate) {
+          const date = new Date(profileData.examDate);
+          setExamDisplayName(date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }));
+        }
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -71,7 +87,7 @@ export default function StudyPage() {
             <div className="text-4xl font-bold">{daysUntilExam}</div>
             <div className="text-sm mt-2">
               {userProfile.examLevel === "level-1" ? "CFA Level I" :
-               userProfile.examLevel === "level-2" ? "CFA Level II" : "CFA Level III"} - {new Date(userProfile.examDate).toLocaleDateString()}
+               userProfile.examLevel === "level-2" ? "CFA Level II" : "CFA Level III"} - {examDisplayName || new Date(userProfile.examDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
             </div>
           </div>
         )}

@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { userId, examLevel, examDate } = body;
+    const { userId, examLevel, examDateId, examDate, examWindowEnd } = body;
 
-    if (!userId || !examLevel || !examDate) {
+    if (!userId || !examLevel || !examDateId || !examDate || !examWindowEnd) {
       return NextResponse.json(
-        { error: "userId, examLevel, and examDate are required" },
+        { error: "userId, examLevel, examDateId, examDate, and examWindowEnd are required" },
         { status: 400 }
       );
     }
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (selectedDate <= today) {
+    if (selectedDate < today) {
       return NextResponse.json(
         { error: "Exam date must be in the future" },
         { status: 400 }
@@ -66,13 +66,17 @@ export async function POST(request: NextRequest) {
 
     const profile = await getOrCreateUserProfile(userId, {
       examLevel: examLevel as "level-1" | "level-2" | "level-3",
+      examDateId,
       examDate,
+      examWindowEnd,
     });
 
     await saveUserProfile({
       ...profile,
       examLevel: examLevel as "level-1" | "level-2" | "level-3",
+      examDateId,
       examDate,
+      examWindowEnd,
     });
 
     return NextResponse.json({ success: true, profile });

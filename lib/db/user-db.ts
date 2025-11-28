@@ -12,7 +12,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return {
     userId: userData.userId,
     examLevel: userData.examLevel,
+    examDateId: userData.examDateId || "",
     examDate: userData.examDate,
+    examWindowEnd: userData.examWindowEnd || userData.examDate,
     createdAt: userData.createdAt,
   };
 }
@@ -25,7 +27,9 @@ export async function saveUserProfile(profile: UserProfile): Promise<void> {
     db.users[profile.userId] = {
       userId: profile.userId,
       examLevel: profile.examLevel,
+      examDateId: profile.examDateId,
       examDate: profile.examDate,
+      examWindowEnd: profile.examWindowEnd,
       createdAt: profile.createdAt,
     };
     return db;
@@ -45,7 +49,9 @@ export async function getOrCreateUserProfile(
   const newProfile: UserProfile = {
     userId,
     examLevel: defaultProfile?.examLevel || "level-1",
+    examDateId: defaultProfile?.examDateId || "",
     examDate: defaultProfile?.examDate || new Date().toISOString().split("T")[0],
+    examWindowEnd: defaultProfile?.examWindowEnd || defaultProfile?.examDate || new Date().toISOString().split("T")[0],
     createdAt: new Date().toISOString(),
   };
 

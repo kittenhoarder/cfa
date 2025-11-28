@@ -8,7 +8,9 @@ export interface Database {
     [userId: string]: {
       userId: string;
       examLevel: "level-1" | "level-2" | "level-3";
-      examDate: string; // ISO date string
+      examDateId: string; // Exam date ID
+      examDate: string; // ISO date string (first day of exam window)
+      examWindowEnd: string; // ISO date string (last day of exam window)
       createdAt: string;
     };
   };
