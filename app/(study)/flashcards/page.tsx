@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { flashcards, getFlashcardById, getFlashcardsByTopic } from "@/lib/content/flashcards";
+import { flashcards, getFlashcardsByTopic } from "@/lib/content/flashcards";
 import { curriculum } from "@/lib/content/curriculum";
 import { getDefaultUserId, getDueCards } from "@/lib/utils/progress";
 import type { Quality } from "@/lib/types/study";
@@ -130,7 +130,12 @@ export default function FlashcardsPage() {
           <select
             value={selectedTopic}
             onChange={(e) => {
-              setSelectedTopic(e.target.value);
+              const newTopic = e.target.value;
+              setSelectedTopic(newTopic);
+              // Recalculate filtered cards to ensure index is valid
+              const newFiltered = newTopic === "all" 
+                ? flashcards.filter((card) => dueCards.includes(card.id))
+                : getFlashcardsByTopic(newTopic).filter((card) => dueCards.includes(card.id));
               setCurrentCardIndex(0);
               setIsFlipped(false);
             }}
